@@ -1,12 +1,42 @@
 import React from "react"
-import { Component } from 'react';
+import { Component } from 'react'
 import { Button, StyleSheet, Text, View, SafeAreaView, TextInput } from "react-native"
 
-export class Login extends Component<{}> {
+interface LoginState {
+  email: string
+  password: string
+  emailError: string
+  passwordError: string
+}
 
-  doLogin() {
-    return
+export class Login extends Component<{}, LoginState> {
+  constructor(props: {}) {
+    super(props)
+    this.state = {
+      email: '',
+      password: '',
+      emailError: '',
+      passwordError: ''
+    }
   }
+
+  doValidateLogin() {
+    if (this.state.email == '') {
+      this.setState({emailError: 'Por favor, insira um e-mail'})
+    } else if ( /\w+@\w+\.com$/.test(this.state.email) == false ) {
+      this.setState({emailError: 'Por favor, insira um e-mail válido'})
+    } else {
+      this.setState({emailError: ''})
+    }
+
+    if (this.state.password == '') {
+      this.setState({passwordError: 'Por favor, insira uma senha'})
+    } else if (this.state.password.length < 7) {
+      this.setState({passwordError: 'A senha deve ter ao menos 7 dígitos'})
+    } else {
+      this.setState({passwordError: ''})
+    }
+  } 
 
   render() {
     return (
@@ -20,17 +50,29 @@ export class Login extends Component<{}> {
           <Text style={styles.formsText}>
             E-mail
           </Text>
-          <TextInput style={styles.inputBox}></TextInput>
+          <TextInput style={styles.inputBox}
+            autoCapitalize = 'none'
+            onChangeText={(email) => this.setState({email: email})}
+          />
+          <Text style={styles.errorText}>
+            {this.state.emailError}
+          </Text>
 
           <Text style={styles.formsText}>
             Senha
           </Text>
-          <TextInput style={styles.inputBox}></TextInput>
+          <TextInput style={styles.inputBox}
+            autoCapitalize = 'none'
+            onChangeText={(password) => this.setState({password: password})}
+          />
+          <Text style={styles.errorText}>
+            {this.state.passwordError}
+          </Text>
 
           <View style={styles.button}>
             <Button
               title="Entrar"
-              onPress={this.doLogin}
+              onPress={this.doValidateLogin.bind(this)}
               accessibilityLabel="submit"
               color="white"
             />
@@ -82,5 +124,11 @@ const styles = StyleSheet.create({
     color: "#999",
     fontWeight: "bold",
     fontSize: 20
+  },
+  errorText: {
+    marginTop: 10,
+    color: "red",
+    fontWeight: "bold",
+    fontSize: 10
   }
 })
