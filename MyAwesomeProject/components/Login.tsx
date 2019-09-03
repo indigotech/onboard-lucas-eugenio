@@ -1,23 +1,12 @@
-// components/Hello.tsx
 import React from "react"
 import { Component } from 'react';
 import { Button, StyleSheet, Text, View, SafeAreaView, TextInput } from "react-native"
 
-interface State {
-  enthusiasmLevel: number
-}
+export class Login extends Component<{}> {
 
-export class Login extends Component<{}, State> {
-  constructor(props: {}) {
-    super(props)
-    this.state = {
-      enthusiasmLevel: 1
-    }
+  doLogin() {
+    return
   }
-
-  onIncrement = () => this.setState({ enthusiasmLevel: this.state.enthusiasmLevel + 1 });
-  onDecrement = () => this.setState({ enthusiasmLevel: Math.max(0, this.state.enthusiasmLevel - 1) });
-  getExclamationMarks = (numChars: number) => Array(numChars + 1).join("!")
 
   render() {
     return (
@@ -41,7 +30,7 @@ export class Login extends Component<{}, State> {
           <View style={styles.button}>
             <Button
               title="Entrar"
-              onPress={this.onIncrement}
+              onPress={this.doLogin}
               accessibilityLabel="submit"
               color="white"
             />
