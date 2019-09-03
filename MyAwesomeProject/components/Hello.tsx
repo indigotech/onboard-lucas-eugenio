@@ -1,28 +1,17 @@
 // components/Hello.tsx
 import React from "react"
-import { Button, StyleSheet, Text, View } from "react-native"
-
-export interface Props {
-  name: string
-  enthusiasmLevel?: number
-  onIncrement?: () => void
-  onDecrement?: () => void
-}
+import { Component } from 'react';
+import { Button, StyleSheet, Text, View, SafeAreaView } from "react-native"
 
 interface State {
   enthusiasmLevel: number
 }
 
-export class Hello extends React.Component<Props, State> {
-  constructor(props: Props) {
+export class Hello extends Component<{}, State> {
+  constructor(props: {}) {
     super(props)
-
-    if ((props.enthusiasmLevel || 0) <= 0) {
-      throw new Error("You could be a little more enthusiastic. :D")
-    }
-
     this.state = {
-      enthusiasmLevel: props.enthusiasmLevel || 1
+      enthusiasmLevel: 1
     }
   }
 
@@ -33,8 +22,9 @@ export class Hello extends React.Component<Props, State> {
   render() {
     return (
       <View style={styles.root}>
+        <SafeAreaView />
         <Text style={styles.greeting}>
-          Hello {this.props.name + this.getExclamationMarks(this.state.enthusiasmLevel)}
+          Hello Lucas {this.getExclamationMarks(this.state.enthusiasmLevel)}
         </Text>
 
         <View style={styles.buttons}>
