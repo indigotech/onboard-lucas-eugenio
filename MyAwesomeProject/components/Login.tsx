@@ -20,23 +20,28 @@ export class Login extends Component<{}, LoginState> {
     }
   }
 
-  doValidateLogin() {
-    if (this.state.email == '') {
-      this.setState({emailError: 'Por favor, insira um e-mail'})
-    } else if ( /\w+@\w+\.com$/.test(this.state.email) == false ) {
-      this.setState({emailError: 'Por favor, insira um e-mail válido'})
+  private handleLoginButtonTap = () => {
+    if (this.state.email === '') {
+      var emailErrorText = 'Por favor, insira um e-mail'
+    } else if ( !/\w+@\w+\.com$/.test(this.state.email) ) {
+      var emailErrorText = 'Por favor, insira um e-mail válido'
     } else {
-      this.setState({emailError: ''})
+      var emailErrorText = ''
     }
 
     if (this.state.password == '') {
-      this.setState({passwordError: 'Por favor, insira uma senha'})
+      var passwordError = 'Por favor, insira uma senha'
     } else if (this.state.password.length < 7) {
-      this.setState({passwordError: 'A senha deve ter ao menos 7 dígitos'})
+      var passwordError = 'A senha deve ter ao menos 7 dígitos'
     } else {
-      this.setState({passwordError: ''})
+      var passwordError = ''
     }
+
+    this.setState({emailError: emailErrorText, passwordError: passwordError})
   } 
+
+  private handleEmailChange = (text: string) => this.setState({email: text})
+  private handlePasswordChange = (text: string) => this.setState({password: text})
 
   render() {
     return (
@@ -52,7 +57,7 @@ export class Login extends Component<{}, LoginState> {
           </Text>
           <TextInput style={styles.inputBox}
             autoCapitalize = 'none'
-            onChangeText={(email) => this.setState({email: email})}
+            onChangeText={this.handleEmailChange}
           />
           <Text style={styles.errorText}>
             {this.state.emailError}
@@ -63,7 +68,7 @@ export class Login extends Component<{}, LoginState> {
           </Text>
           <TextInput style={styles.inputBox}
             autoCapitalize = 'none'
-            onChangeText={(password) => this.setState({password: password})}
+            onChangeText={this.handlePasswordChange}
           />
           <Text style={styles.errorText}>
             {this.state.passwordError}
@@ -72,7 +77,7 @@ export class Login extends Component<{}, LoginState> {
           <View style={styles.button}>
             <Button
               title="Entrar"
-              onPress={this.doValidateLogin.bind(this)}
+              onPress={this.handleLoginButtonTap}
               accessibilityLabel="submit"
               color="white"
             />
