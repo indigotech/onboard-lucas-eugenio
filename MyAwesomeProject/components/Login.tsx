@@ -1,6 +1,7 @@
 import React from "react"
 import { Component } from 'react'
-import { Button, StyleSheet, Text, View, SafeAreaView, TextInput } from "react-native"
+import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, AsyncStorage } from "react-native"
+import ApolloClient, { gql, FetchResult } from 'apollo-boost'
 
 interface LoginState {
   email: string
@@ -8,6 +9,10 @@ interface LoginState {
   emailError: string
   passwordError: string
 }
+
+const client = new ApolloClient({
+  uri: 'https://tq-template-server-sample.herokuapp.com/graphql',
+});
 
 export class Login extends Component<{}, LoginState> {
   constructor(props: {}) {
@@ -41,7 +46,30 @@ export class Login extends Component<{}, LoginState> {
     }
 
     this.setState({emailError: emailErrorText, passwordError: passwordErrorText})
-  } 
+
+    if (!this.state.emailError && !this.state.passwordError) {
+      client.mutate({
+        mutation: gql`
+          mutation LoginMutation {
+            Login ( data: {
+              email: "${this.state.email}",
+              password: "${this.state.password}"
+            } ) { token } }` } )
+      .then(result => {this.storeToken(result)})
+      .catch(error => console.log(error))
+    }
+  }
+
+  private async storeToken(result: FetchResult) {
+    if (!result.data) { return }
+    const token: string = result.data.Login.token
+    try {
+      await AsyncStorage.setItem('@MyAwesomeProkect:Token', token)
+      console.log('Token Salvo No Banco')
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   private handleEmailChange = (text: string) => this.setState({email: text})
   private handlePasswordChange = (text: string) => this.setState({password: text})
