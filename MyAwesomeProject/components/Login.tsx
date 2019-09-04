@@ -40,7 +40,7 @@ export class Login extends Component<{}, LoginState> {
       passwordErrorText = ''
     }
 
-    this.setState({emailError: emailErrorText, passwordError: passwordError})
+    this.setState({emailError: emailErrorText, passwordError: passwordErrorText})
   } 
 
   private handleEmailChange = (text: string) => this.setState({email: text})
