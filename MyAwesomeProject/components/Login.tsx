@@ -21,20 +21,23 @@ export class Login extends Component<{}, LoginState> {
   }
 
   private handleLoginButtonTap = () => {
+    let emailErrorText: string
+    let passwordErrorText: string
+
     if (this.state.email === '') {
-      var emailErrorText = 'Por favor, insira um e-mail'
+      emailErrorText = 'Por favor, insira um e-mail'
     } else if ( !/\w+@\w+\.com$/.test(this.state.email) ) {
-      var emailErrorText = 'Por favor, insira um e-mail válido'
+      emailErrorText = 'Por favor, insira um e-mail válido'
     } else {
-      var emailErrorText = ''
+      emailErrorText = ''
     }
 
-    if (this.state.password == '') {
-      var passwordError = 'Por favor, insira uma senha'
+    if (this.state.password === '') {
+      passwordErrorText = 'Por favor, insira uma senha'
     } else if (this.state.password.length < 7) {
-      var passwordError = 'A senha deve ter ao menos 7 dígitos'
+      passwordErrorText = 'A senha deve ter ao menos 7 dígitos'
     } else {
-      var passwordError = ''
+      passwordErrorText = ''
     }
 
     this.setState({emailError: emailErrorText, passwordError: passwordError})
