@@ -1,5 +1,6 @@
-import { Client } from "../ApolloClient";
-import { gql } from 'apollo-boost'
+import { Client } from "../ApolloClient"
+import { gql, FetchResult } from 'apollo-boost'
+import { resolve } from "url";
 
 export interface LoginInput {
     email: string
@@ -9,15 +10,15 @@ export interface LoginInput {
 
 export function clientLogin(data: LoginInput) {
     return (
-        Client.mutate({
+        Client.mutate<Promise<FetchResult<string>>, { data: LoginInput }>({
             mutation: gql(LoginMutation),
-            variables: {LoginInput: data}})
+            variables: { data }})
     )
 }
+
 const LoginMutation = `
-    mutation LoginMutation ($LoginInput: LoginInput!) {
-        Login (data: $LoginInput) {
+    mutation LoginMutation($data: LoginInput!) {
+        Login (data: $data) {
             token
         }
     }`
-
