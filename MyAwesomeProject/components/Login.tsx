@@ -1,71 +1,76 @@
 import React from "react"
 import { Component } from 'react'
 import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, AsyncStorage, ActivityIndicator, Alert } from "react-native"
-import { gql, FetchResult } from 'apollo-boost'
-import { Client } from '../ApolloClient'
-import { LoginMutation } from '../mutations/Login'
+import { FetchResult } from 'apollo-boost'
+import { clientLogin, LoginInput } from '../mutations/Login'
 
 interface LoginState {
-  email: string
-  password: string
   emailError: string
   passwordError: string
-  buttonEnable: boolean
+  loadingIcon: boolean
 }
 
 const tokenKeyName: string = "TokenKey"
 const loginErrorAlert: string =  "Credenciais Inválidas"
 const loginSuccessAlert: string = "Login Realizado Com Sucesso"
-const saveTokenErrorAlert: string = "O Token Não Foi Salvo"
+const saveTokenErrorAlert: string = "Ops, Algo Deu Errado"
 
 export class Login extends Component<{}, LoginState> {
+  private email: string
+  private password: string
+
   constructor(props: {}) {
     super(props)
+    this.email = ''
+    this.password = ''
     this.state = {
-      email: '',
-      password: '',
       emailError: '',
       passwordError: '',
-      buttonEnable: true
+      loadingIcon: false
     }
   }
 
   private handleLoginButtonTap = () => {
-    let emailErrorText: string
-    let passwordErrorText: string
-
-    if (this.state.email === '') {
-      emailErrorText = 'Por favor, insira um e-mail'
-    } else if ( !/\w+@\w+\.com$/.test(this.state.email) ) {
-      emailErrorText = 'Por favor, insira um e-mail válido'
-    } else {
-      emailErrorText = ''
-    }
-
-    if (this.state.password === '') {
-      passwordErrorText = 'Por favor, insira uma senha'
-    } else if (this.state.password.length < 7) {
-      passwordErrorText = 'A senha deve ter ao menos 7 dígitos'
-    } else {
-      passwordErrorText = ''
-    }
+    const emailErrorText: string = this.validateEmail()
+    const passwordErrorText: string = this.validatePassword()
 
     if (!passwordErrorText && !emailErrorText) {
-      this.setState({buttonEnable: false})
-      this.doLoginMutation()
+      this.setState({loadingIcon: true})
+      this.doLogin()
     } else {
       this.setState({emailError: emailErrorText, passwordError: passwordErrorText})
     }
   }
 
-  private doLoginMutation() {
-    Client.mutate({
-      mutation: gql(LoginMutation),
-      variables: {email: this.state.email, password: this.state.password}
-    })
-    .then(result => {this.storeToken(result)})
+  private validateEmail(): string {
+    if (this.email === '') {
+      return 'Por favor, insira um e-mail'
+    } else if ( !/\w+@\w+\.com$/.test(this.email) ) {
+      return 'Por favor, insira um e-mail válido'
+    } else {
+      return ''
+    }
+  }
+
+  private validatePassword(): string {
+    if (this.password === '') {
+      return 'Por favor, insira uma senha'
+    } else if (this.password.length < 7) {
+      return 'A senha deve ter ao menos 7 dígitos'
+    } else {
+      return ''
+    }
+  }
+
+  private doLogin() {
+    const LoginInput: LoginInput = {
+      email: this.email,
+      password: this.password
+    }
+    clientLogin({email: this.email, password: this.password})
+    .then(result => this.storeToken(result))
     .catch(() => Alert.alert(loginErrorAlert))
-    .finally(() => this.setState({buttonEnable: true}))
+    .finally(() => this.setState({loadingIcon: false}))
   }
 
   private async storeToken(result: FetchResult) {
@@ -79,8 +84,8 @@ export class Login extends Component<{}, LoginState> {
     }
   }
 
-  private handleEmailChange = (text: string) => this.setState({email: text})
-  private handlePasswordChange = (text: string) => this.setState({password: text})
+  private handleEmailChange = (text: string) => this.email = text
+  private handlePasswordChange = (text: string) => this.password = text
 
   render() {
     return (
@@ -117,14 +122,14 @@ export class Login extends Component<{}, LoginState> {
             <Button
               title="Entrar"
               onPress={this.handleLoginButtonTap}
-              disabled={!this.state.buttonEnable}
+              disabled={this.state.loadingIcon}
               color="white"
             />
           </View>
 
             <View style={styles.loading}>
               <ActivityIndicator
-                style={{display: this.state.buttonEnable ? "none" : "flex"}}
+                style={{display: this.state.loadingIcon ? "flex" : "none"}}
                 size="large"
                 color="black"
               />
