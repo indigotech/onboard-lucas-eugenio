@@ -1,18 +1,22 @@
 import React from "react"
 import { Component } from 'react'
-import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, AsyncStorage } from "react-native"
-import ApolloClient, { gql, FetchResult } from 'apollo-boost'
+import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, AsyncStorage, ActivityIndicator, Alert } from "react-native"
+import { gql, FetchResult } from 'apollo-boost'
+import { Client } from '../ApolloClient'
+import { LoginMutation } from '../mutations/Login'
 
 interface LoginState {
   email: string
   password: string
   emailError: string
   passwordError: string
+  buttonEnable: boolean
 }
 
-const client = new ApolloClient({
-  uri: 'https://tq-template-server-sample.herokuapp.com/graphql',
-});
+const tokenKeyName: string = "TokenKey"
+const loginErrorAlert: string =  "Credenciais Inválidas"
+const loginSuccessAlert: string = "Login Realizado Com Sucesso"
+const saveTokenErrorAlert: string = "O Token Não Foi Salvo"
 
 export class Login extends Component<{}, LoginState> {
   constructor(props: {}) {
@@ -21,7 +25,8 @@ export class Login extends Component<{}, LoginState> {
       email: '',
       password: '',
       emailError: '',
-      passwordError: ''
+      passwordError: '',
+      buttonEnable: true
     }
   }
 
@@ -45,29 +50,32 @@ export class Login extends Component<{}, LoginState> {
       passwordErrorText = ''
     }
 
-    this.setState({emailError: emailErrorText, passwordError: passwordErrorText})
-
-    if (!this.state.emailError && !this.state.passwordError) {
-      client.mutate({
-        mutation: gql`
-          mutation LoginMutation {
-            Login ( data: {
-              email: "${this.state.email}",
-              password: "${this.state.password}"
-            } ) { token } }` } )
-      .then(result => {this.storeToken(result)})
-      .catch(error => console.log(error))
+    if (!passwordErrorText && !emailErrorText) {
+      this.setState({buttonEnable: false})
+      this.doLoginMutation()
+    } else {
+      this.setState({emailError: emailErrorText, passwordError: passwordErrorText})
     }
+  }
+
+  private doLoginMutation() {
+    Client.mutate({
+      mutation: gql(LoginMutation),
+      variables: {email: this.state.email, password: this.state.password}
+    })
+    .then(result => {this.storeToken(result)})
+    .catch(() => Alert.alert(loginErrorAlert))
+    .finally(() => this.setState({buttonEnable: true}))
   }
 
   private async storeToken(result: FetchResult) {
     if (!result.data) { return }
     const token: string = result.data.Login.token
     try {
-      await AsyncStorage.setItem('@MyAwesomeProkect:Token', token)
-      console.log('Token Salvo No Banco')
+      await AsyncStorage.setItem(tokenKeyName, token)
+      Alert.alert(loginSuccessAlert)
     } catch (error) {
-      console.log(error)
+      Alert.alert(saveTokenErrorAlert)
     }
   }
 
@@ -109,9 +117,17 @@ export class Login extends Component<{}, LoginState> {
             <Button
               title="Entrar"
               onPress={this.handleLoginButtonTap}
-              accessibilityLabel="submit"
+              disabled={!this.state.buttonEnable}
               color="white"
             />
+          </View>
+
+            <View style={styles.loading}>
+              <ActivityIndicator
+                style={{display: this.state.buttonEnable ? "none" : "flex"}}
+                size="large"
+                color="black"
+              />
           </View>
         </View>
       </View>
@@ -166,5 +182,10 @@ const styles = StyleSheet.create({
     color: "red",
     fontWeight: "bold",
     fontSize: 10
+  },
+  loading: {
+    marginTop: 40,
+    alignSelf: "stretch",
+    alignItems: "center"
   }
 })
