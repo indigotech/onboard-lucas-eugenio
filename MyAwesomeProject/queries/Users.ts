@@ -1,8 +1,21 @@
 import { Client } from '../ApolloClient'
 import { usersPerPage } from '../components/UserList'
-import gql from 'graphql-tag';
+import gql from 'graphql-tag'
+import { ApolloQueryResult } from 'apollo-boost'
 
-export function getUsersPromise(offset: number) {
+interface Users {
+    nodes: [{
+        id: number
+        name: string
+        email: string
+    }]
+    pageInfo: {
+        hasNextPage: boolean
+        hasPreviousPage: boolean
+    }
+}
+
+export function getUsersPromise(offset: number): Promise<ApolloQueryResult<Users>> {
     return (
         Client.query({
             query: gql(UsersQuery),
