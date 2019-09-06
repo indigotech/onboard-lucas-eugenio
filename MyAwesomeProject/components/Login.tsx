@@ -1,8 +1,9 @@
 import React from "react"
 import { Component } from 'react'
-import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, AsyncStorage, ActivityIndicator, Alert } from "react-native"
+import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, ActivityIndicator, Alert } from "react-native"
 import { FetchResult } from 'apollo-boost'
 import { clientLogin, LoginInput } from '../mutations/Login'
+import { storeTokenOnStorage } from '../Storage'
 
 interface LoginState {
   emailError: string
@@ -10,7 +11,7 @@ interface LoginState {
   loadingIcon: boolean
 }
 
-const tokenKeyName: string = "TokenKey"
+
 const loginErrorAlert: string =  "Credenciais Inválidas"
 const loginSuccessAlert: string = "Login Realizado Com Sucesso"
 const saveTokenErrorAlert: string = "Ops, Algo Deu Errado"
@@ -65,7 +66,8 @@ export class Login extends Component<{}, LoginState> {
   private doLogin() {
     const LoginInput: LoginInput = {
       email: this.email,
-      password: this.password
+      password: this.password,
+      rememberMe: true
     }
     clientLogin({email: this.email, password: this.password})
     .then(result => this.storeToken(result))
@@ -77,7 +79,7 @@ export class Login extends Component<{}, LoginState> {
     if (!result.data) { return }
     const token: string = result.data.Login.token
     try {
-      await AsyncStorage.setItem(tokenKeyName, token)
+      await storeTokenOnStorage(token)
       Alert.alert(loginSuccessAlert)
     } catch (error) {
       Alert.alert(saveTokenErrorAlert)

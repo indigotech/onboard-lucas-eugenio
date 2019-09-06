@@ -1,30 +1,41 @@
 import React from "react"
 import { Component } from 'react'
-import { StyleSheet, Text, View, SafeAreaView, FlatList } from "react-native"
+import { StyleSheet, Text, View, SafeAreaView, FlatList, Alert, ActivityIndicator } from "react-native"
+import { getUsersPromise } from '../queries/Users'
+import { FetchResult } from "apollo-link";
 
 interface UserPresentation {
     name: string,
     email: string
 }
 
-export class UserList extends Component<{}> {
+interface UserListState {
+    users: UserPresentation[]
+    loadingIcon: boolean
+}
+
+export class UserList extends Component<{}, UserListState> {
     constructor(props: {}) {
         super(props)
+        this.state = {
+            users: [],
+            loadingIcon: true
+        }
     }
-    
+
+    private getUsersArray() {
+        getUsersPromise()
+        .then(result => this.setUsersList(result))
+        .catch(error => console.warn(error))
+        .finally(() => this.setState({loadingIcon: false}))
+    }
+
+    private setUsersList(result: FetchResult) {
+      if (!result.data) { return }
+      this.setState({users: result.data.Users.nodes, loadingIcon: false})
+    }
 
   render() {
-    const users: Array<UserPresentation> = [
-        { name:  "Rick Sanchez",
-          email: "rick@email.com" },
-        { name:  "Morty Smith",
-          email: "morty@email.com" },
-        { name:  "Summer Smith",
-          email: "summer@email.com"},
-        { name:  "Beth Sanchez",
-          email: "beth@email.com"}
-    ]
-
     return (
       <View style={styles.root}>
         <SafeAreaView/>
@@ -34,7 +45,7 @@ export class UserList extends Component<{}> {
 
         <View style={styles.body}>
           <FlatList
-            data={users}
+            data={this.state.users}
             showsVerticalScrollIndicator={false}
             renderItem={({item}) =>
                 <View style={styles.flatview}>
@@ -45,8 +56,20 @@ export class UserList extends Component<{}> {
             keyExtractor={item => item.email}
           />
         </View>
+
+        <View style={styles.loading}>
+              <ActivityIndicator
+                style={{display: this.state.loadingIcon ? "flex" : "none"}}
+                size="large"
+                color="black"
+              />
+          </View>
       </View>
     )
+  }
+
+  componentDidMount() {
+    this.getUsersArray()
   }
 }
 
@@ -65,7 +88,7 @@ const styles = StyleSheet.create({
   body: {
     alignItems: "baseline",
     alignSelf: "stretch",
-    marginTop: 30,
+    marginTop: 10,
     padding: 20,
     minHeight: 200
   },
@@ -86,5 +109,10 @@ const styles = StyleSheet.create({
   },
   email: {
     color: 'red'
+  },
+  loading: {
+    marginTop: 40,
+    alignSelf: "stretch",
+    alignItems: "center"
   }
 })
