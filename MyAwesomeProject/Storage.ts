@@ -2,7 +2,7 @@ import { AsyncStorage } from 'react-native'
 
 export const tokenKeyName: string = "TokenKey"
 
-export async function getToken(): Promise<string|null> {
+export async function getToken(): Promise<string> {
     const token = await AsyncStorage.getItem(tokenKeyName)
     return token ? token : ''
 }
