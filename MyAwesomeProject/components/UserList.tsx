@@ -2,7 +2,7 @@ import React from "react"
 import { Component } from 'react'
 import { StyleSheet, Text, View, SafeAreaView, FlatList, Alert, ActivityIndicator } from "react-native"
 import { getUsersPromise } from '../queries/Users'
-import { FetchResult } from "apollo-link";
+import { FetchResult } from "apollo-link"
 
 interface UserPresentation {
     name: string,
@@ -11,29 +11,17 @@ interface UserPresentation {
 
 interface UserListState {
     users: UserPresentation[]
-    loadingIcon: boolean
+    isLoading: boolean
 }
 
 export class UserList extends Component<{}, UserListState> {
-    constructor(props: {}) {
-        super(props)
-        this.state = {
-            users: [],
-            loadingIcon: true
-        }
-    }
-
-    private getUsersArray() {
-        getUsersPromise()
-        .then(result => this.setUsersList(result))
-        .catch(error => console.warn(error))
-        .finally(() => this.setState({loadingIcon: false}))
-    }
-
-    private setUsersList(result: FetchResult) {
-      if (!result.data) { return }
-      this.setState({users: result.data.Users.nodes, loadingIcon: false})
-    }
+  constructor(props: {}) {
+      super(props)
+      this.state = {
+          users: [],
+          isLoading: true
+      }
+  }
 
   render() {
     return (
@@ -59,7 +47,7 @@ export class UserList extends Component<{}, UserListState> {
 
         <View style={styles.loading}>
               <ActivityIndicator
-                style={{display: this.state.loadingIcon ? "flex" : "none"}}
+                style={{display: this.state.isLoading ? "flex" : "none"}}
                 size="large"
                 color="black"
               />
@@ -70,6 +58,18 @@ export class UserList extends Component<{}, UserListState> {
 
   componentDidMount() {
     this.getUsersArray()
+  }
+
+  private getUsersArray() {
+      getUsersPromise()
+      .then(result => this.setUsersList(result))
+      .catch(error => console.warn(error))
+      .finally(() => this.setState({isLoading: false}))
+  }
+
+  private setUsersList(result: FetchResult) {
+    if (!result.data) { return }
+    this.setState({users: result.data.Users.nodes, isLoading: false})
   }
 }
 

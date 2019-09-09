@@ -1,5 +1,5 @@
 import { Client } from '../ApolloClient'
-import gql from 'graphql-tag';
+import gql from 'graphql-tag'
 
 export function getUsersPromise() {
     return (
