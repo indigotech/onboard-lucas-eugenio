@@ -1,4 +1,4 @@
-import { Client } from "../ApolloClient"
+import { LoginClient } from "../ApolloClient"
 import { gql, FetchResult } from 'apollo-boost'
 
 export interface LoginInput {
@@ -9,7 +9,7 @@ export interface LoginInput {
 
 export function clientLogin(data: LoginInput) {
     return (
-        Client.mutate<Promise<FetchResult<string>>, { data: LoginInput }>({
+        LoginClient.mutate<Promise<FetchResult<string>>, { data: LoginInput }>({
             mutation: gql(LoginMutation),
             variables: { data }})
     )

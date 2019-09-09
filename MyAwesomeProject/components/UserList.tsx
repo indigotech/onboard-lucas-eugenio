@@ -1,18 +1,12 @@
 import React from "react"
 import { Component } from 'react'
-import { StyleSheet, Text, View, SafeAreaView, FlatList, Alert, ActivityIndicator, Button } from "react-native"
-import { getUsersPromise } from '../queries/Users'
+import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator, Button, ListRenderItemInfo } from "react-native"
+import { getUsersPromise, UserPresenter } from '../queries/Users'
 import { FetchResult } from "apollo-link"
 
-interface UserPresentation {
-  id: number
-  name: string
-  email: string
-}
-
 interface UserListState {
-  users: UserPresentation[]
-  loadingIcon: boolean
+  users: UserPresenter[]
+  isLoading: boolean
   usersError: boolean
   offset: number
   hasNextPage: boolean
@@ -27,7 +21,7 @@ export class UserList extends Component<{}, UserListState> {
       super(props)
       this.state = {
         users: [],
-        loadingIcon: true,
+        isLoading: true,
         usersError: false,
         offset: 0,
         hasNextPage: false,
@@ -35,83 +29,8 @@ export class UserList extends Component<{}, UserListState> {
       }
   }
 
-  private getUsersArray() {
-    getUsersPromise(this.state.offset)
-    .then(result => this.setUsersList(result))
-    .catch(error => this.setState({usersError: true}))
-    .finally(() => this.setState({loadingIcon: false}))
-  }
-
-  private setUsersList(result: FetchResult) {
-    if (!result.data) { return }
-    this.setState({
-      users: result.data.Users.nodes, 
-      loadingIcon: false,
-      hasPreviousPage: result.data.Users.pageInfo.hasPreviousPage,
-      hasNextPage: result.data.Users.pageInfo.hasNextPage
-    })
-  }
-
-  private displayLoadingIcon() {
-    if (this.state.loadingIcon) { 
-      return (
-        <View style={styles.loading}>
-          <ActivityIndicator size="large" color="black"/>
-        </View> 
-      )
-    }
-  }
-
-  private displayItemOfList(item: UserPresentation) {
-    return (
-      <View style={styles.flatview}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.email}>{item.email}</Text>
-      </View>
-    )
-  }
-
-  private displayUsersError() {
-    if (this.state.usersError) {
-      return (
-        <View style={styles.flatview}>
-          <Text style={styles.error}>{errorText}</Text>
-        </View>
-      )
-    }
-  }
-
-  private displayButtonsContainer() {
-    return (
-      <View style={styles.buttonsContainer}>
-        <View style={styles.button}>
-          <Button
-            title="<<"
-            onPress={this.handlePreviousButtonTap}
-            disabled={!this.state.hasPreviousPage}
-            color="white"
-          />
-        </View>
-  
-        <View style={styles.button}>
-          <Button
-            title=">>"
-            onPress={this.handleNextButtonTap}
-            disabled={!this.state.hasNextPage}
-            color="white"
-          />
-        </View>
-      </View>
-    )
-  }
-
-  private handlePreviousButtonTap = async () => { 
-    await this.setState({offset: this.state.offset - usersPerPage})
-    this.getUsersArray()
-  }
-  private handleNextButtonTap = async () => { 
-    await this.setState({offset: this.state.offset + usersPerPage}) 
-    this.getUsersArray()
+  componentDidMount() {
+    this.getUsers()
   }
 
   render() {
@@ -126,22 +45,71 @@ export class UserList extends Component<{}, UserListState> {
           <FlatList
             data={this.state.users}
             showsVerticalScrollIndicator={false}
-            renderItem={({item}) => this.displayItemOfList(item)}
+            renderItem={this.displayItemOfList}
             keyExtractor={item => item.email}
           />
         </View>
 
-        {this.displayUsersError()}
+        {this.state.usersError && <Text style={styles.error}>{errorText}</Text>}
 
-        {this.displayLoadingIcon()}
+        {this.state.isLoading && <ActivityIndicator size="large" color="black"/>}
 
-        {this.displayButtonsContainer()}
+        <View style={styles.buttonsContainer}>
+          <View style={styles.button}>
+            <Button
+              title="<<"
+              onPress={this.handlePreviousButtonTap}
+              disabled={!this.state.hasPreviousPage}
+              color="white"
+            />
+          </View>
+    
+          <View style={styles.button}>
+            <Button
+              title=">>"
+              onPress={this.handleNextButtonTap}
+              disabled={!this.state.hasNextPage}
+              color="white"
+            />
+          </View>
+        </View>
       </View>
     )
   }
 
-  componentDidMount() {
-    this.getUsersArray()
+  private getUsers() {
+    getUsersPromise(this.state.offset, usersPerPage)
+    .then(result => this.setUsersList(result))
+    .catch(error => this.setState({usersError: true}))
+    .finally(() => this.setState({isLoading: false}))
+  }
+
+  private setUsersList(result: FetchResult) {
+    if (!result.data) { return }
+    this.setState({
+      users: result.data.Users.nodes, 
+      isLoading: false,
+      hasPreviousPage: result.data.Users.pageInfo.hasPreviousPage,
+      hasNextPage: result.data.Users.pageInfo.hasNextPage
+    })
+  }
+
+  private displayItemOfList({ item: user }: ListRenderItemInfo<UserPresenter>) {
+    return (
+      <View style={styles.flatview}>
+        <Text style={styles.name}>{user.name}</Text>
+        <Text style={styles.email}>{user.email}</Text>
+      </View>
+    )
+  }
+
+  private handlePreviousButtonTap = async () => { 
+    await this.setState({offset: this.state.offset - usersPerPage})
+    this.getUsers()
+  }
+  private handleNextButtonTap = async () => { 
+    await this.setState({offset: this.state.offset + usersPerPage}) 
+    this.getUsers()
   }
 }
 
