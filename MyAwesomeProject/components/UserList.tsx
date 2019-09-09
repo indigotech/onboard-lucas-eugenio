@@ -1,6 +1,6 @@
 import React from "react"
 import { Component } from 'react'
-import { StyleSheet, Text, View, SafeAreaView, FlatList, Alert, ActivityIndicator, Button, ListRenderItemInfo } from "react-native"
+import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator, Button, ListRenderItemInfo } from "react-native"
 import { getUsersPromise, UserPresenter } from '../queries/Users'
 import { FetchResult } from "apollo-link"
 

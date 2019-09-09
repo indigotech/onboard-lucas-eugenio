@@ -7,6 +7,12 @@ export async function getToken(): Promise<string> {
     return token ? token : ''
 }
 
+
+export function localGetToken(): string {
+    const token = localStorage.getItem(keyName)
+    return token ? token : ''
+}
+
 export function storeToken(token: string): Promise<void> {
     return AsyncStorage.setItem(keyName, token)
 }

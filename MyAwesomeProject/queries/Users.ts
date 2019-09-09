@@ -1,4 +1,4 @@
-import { Client } from '../ApolloClient'
+import { AuthClient } from '../ApolloClient'
 import gql from 'graphql-tag'
 import { ApolloQueryResult } from 'apollo-boost'
 
@@ -20,7 +20,7 @@ interface PageInfo {
 
 export function getUsersPromise(offset: number, limit: number): Promise<ApolloQueryResult<Users>> {
     return (
-        Client.query({
+        AuthClient.query({
             query: gql(UsersQuery),
             variables: {offset: offset, limit: limit}
         })

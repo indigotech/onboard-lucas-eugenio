@@ -4,6 +4,7 @@ import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, ActivityIndica
 import { FetchResult } from 'apollo-boost'
 import { clientLogin, LoginInput } from '../mutations/Login'
 import { storeToken, localStoreToken } from '../TokenStorage'
+import { Navigation } from 'react-native-navigation'
 
 interface LoginState {
   emailError: string
@@ -69,7 +70,9 @@ export class Login extends Component<{}, LoginState> {
             />
           </View>
 
-          {this.state.isLoading && <ActivityIndicator size="large" color="black"/>}
+          <View style={styles.loading}>
+            {this.state.isLoading && <ActivityIndicator size="large" color="black"/>}            
+          </View>
         </View>
       </View>
     )
@@ -124,9 +127,10 @@ export class Login extends Component<{}, LoginState> {
     const token: string = result.data.Login.token
     try {
       await storeToken(token)
-      Alert.alert(loginSuccessAlert)
     } catch (error) {
       localStoreToken(token)
+    } finally {
+      Navigation.setRoot({root:{component:{name:'Users'}}})
     }
   }
 
