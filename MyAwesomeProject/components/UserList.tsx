@@ -1,30 +1,39 @@
 import React from "react"
 import { Component } from 'react'
-import { StyleSheet, Text, View, SafeAreaView, FlatList } from "react-native"
+import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator, Button, ListRenderItemInfo } from "react-native"
+import { getUsersPromise, UserPresenter } from '../queries/Users'
+import { FetchResult } from "apollo-link"
 
-interface UserPresentation {
-    name: string,
-    email: string
+interface UserListState {
+  users: UserPresenter[]
+  isLoading: boolean
+  usersError: boolean
+  offset: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
 }
 
-export class UserList extends Component<{}> {
-    constructor(props: {}) {
-        super(props)
-    }
-    
+export const usersPerPage: number = 8
+const errorText: string = 'Ops, Algo Deu Errado!'
+
+export class UserList extends Component<{}, UserListState> {
+  constructor(props: {}) {
+      super(props)
+      this.state = {
+        users: [],
+        isLoading: true,
+        usersError: false,
+        offset: 0,
+        hasNextPage: false,
+        hasPreviousPage: false
+      }
+  }
+
+  componentDidMount() {
+    this.getUsers()
+  }
 
   render() {
-    const users: Array<UserPresentation> = [
-        { name:  "Rick Sanchez",
-          email: "rick@email.com" },
-        { name:  "Morty Smith",
-          email: "morty@email.com" },
-        { name:  "Summer Smith",
-          email: "summer@email.com"},
-        { name:  "Beth Sanchez",
-          email: "beth@email.com"}
-    ]
-
     return (
       <View style={styles.root}>
         <SafeAreaView/>
@@ -34,19 +43,73 @@ export class UserList extends Component<{}> {
 
         <View style={styles.body}>
           <FlatList
-            data={users}
+            data={this.state.users}
             showsVerticalScrollIndicator={false}
-            renderItem={({item}) =>
-                <View style={styles.flatview}>
-                    <Text style={styles.name}>{item.name}</Text>
-                    <Text style={styles.email}>{item.email}</Text>
-                </View>
-            }
+            renderItem={this.displayItemOfList}
             keyExtractor={item => item.email}
           />
         </View>
+
+        {this.state.usersError && <Text style={styles.error}>{errorText}</Text>}
+
+        {this.state.isLoading && <ActivityIndicator size="large" color="black"/>}
+
+        <View style={styles.buttonsContainer}>
+          <View style={styles.button}>
+            <Button
+              title="<<"
+              onPress={this.handlePreviousButtonTap}
+              disabled={!this.state.hasPreviousPage}
+              color="white"
+            />
+          </View>
+    
+          <View style={styles.button}>
+            <Button
+              title=">>"
+              onPress={this.handleNextButtonTap}
+              disabled={!this.state.hasNextPage}
+              color="white"
+            />
+          </View>
+        </View>
       </View>
     )
+  }
+
+  private getUsers() {
+    getUsersPromise(this.state.offset, usersPerPage)
+    .then(result => this.setUsersList(result))
+    .catch(error => this.setState({usersError: true}))
+    .finally(() => this.setState({isLoading: false}))
+  }
+
+  private setUsersList(result: FetchResult) {
+    if (!result.data) { return }
+    this.setState({
+      users: result.data.Users.nodes, 
+      isLoading: false,
+      hasPreviousPage: result.data.Users.pageInfo.hasPreviousPage,
+      hasNextPage: result.data.Users.pageInfo.hasNextPage
+    })
+  }
+
+  private displayItemOfList({ item: user }: ListRenderItemInfo<UserPresenter>) {
+    return (
+      <View style={styles.flatview}>
+        <Text style={styles.name}>{user.name}</Text>
+        <Text style={styles.email}>{user.email}</Text>
+      </View>
+    )
+  }
+
+  private handlePreviousButtonTap = async () => { 
+    await this.setState({offset: this.state.offset - usersPerPage})
+    this.getUsers()
+  }
+  private handleNextButtonTap = async () => { 
+    await this.setState({offset: this.state.offset + usersPerPage}) 
+    this.getUsers()
   }
 }
 
@@ -65,7 +128,7 @@ const styles = StyleSheet.create({
   body: {
     alignItems: "baseline",
     alignSelf: "stretch",
-    marginTop: 30,
+    marginTop: 10,
     padding: 20,
     minHeight: 200
   },
@@ -86,5 +149,28 @@ const styles = StyleSheet.create({
   },
   email: {
     color: 'red'
+  },
+  loading: {
+    marginTop: 20,
+    alignSelf: "stretch",
+    alignItems: "center"
+  },
+  buttonsContainer: {
+    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: "center"
+  },
+  button: {
+    marginHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: "cadetblue",
+    paddingHorizontal: 40,
+    paddingVertical: 10
+  },
+  error: {
+    color: "red",
+    fontSize: 18,
+    fontWeight: "bold"
   }
 })
