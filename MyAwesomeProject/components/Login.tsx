@@ -2,9 +2,10 @@ import React from "react"
 import { Component } from 'react'
 import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, ActivityIndicator, Alert } from "react-native"
 import { FetchResult } from 'apollo-boost'
-import { clientLogin, LoginInput } from '../mutations/Login'
+import { UserLogin, LoginInput } from '../mutations/Login'
 import { storeToken, localStoreToken } from '../TokenStorage'
-import { Navigation } from 'react-native-navigation'
+import { validateEmail, validatePassword } from '../Validations'
+import { goToUsers } from "../Screens"
 
 interface LoginState {
   emailError: string
@@ -13,7 +14,6 @@ interface LoginState {
 }
 
 const loginErrorAlert: string =  "Credenciais Inválidas"
-const loginSuccessAlert: string = "Login Realizado Com Sucesso"
 
 export class Login extends Component<{}, LoginState> {
   private email: string
@@ -64,7 +64,7 @@ export class Login extends Component<{}, LoginState> {
           <View style={styles.button}>
             <Button
               title="Entrar"
-              onPress={this.handleLoginButtonTap}
+              onPress={this.handleButtonTap}
               disabled={this.state.isLoading}
               color="white"
             />
@@ -78,9 +78,9 @@ export class Login extends Component<{}, LoginState> {
     )
   }
 
-  private handleLoginButtonTap = () => {
-    const emailErrorText: string = this.validateEmail()
-    const passwordErrorText: string = this.validatePassword()
+  private handleButtonTap = () => {
+    const emailErrorText: string = validateEmail(this.email)
+    const passwordErrorText: string = validatePassword(this.password)
 
     if (!passwordErrorText && !emailErrorText) {
       this.setState({isLoading: true})
@@ -90,33 +90,13 @@ export class Login extends Component<{}, LoginState> {
     }
   }
 
-  private validateEmail(): string {
-    if (this.email === '') {
-      return 'Por favor, insira um e-mail'
-    } else if ( !/\w+@\w+\.com$/.test(this.email) ) {
-      return 'Por favor, insira um e-mail válido'
-    } else {
-      return ''
-    }
-  }
-
-  private validatePassword(): string {
-    if (this.password === '') {
-      return 'Por favor, insira uma senha'
-    } else if (this.password.length < 7) {
-      return 'A senha deve ter ao menos 7 dígitos'
-    } else {
-      return ''
-    }
-  }
-
   private doLogin() {
     const LoginInput: LoginInput = {
       email: this.email,
       password: this.password,
       rememberMe: true
     }
-    clientLogin({email: this.email, password: this.password})
+    UserLogin(LoginInput)
     .then(result => this.storeToken(result))
     .catch(() => Alert.alert(loginErrorAlert))
     .finally(() => this.setState({isLoading: false}))
@@ -130,7 +110,7 @@ export class Login extends Component<{}, LoginState> {
     } catch (error) {
       localStoreToken(token)
     } finally {
-      Navigation.setRoot({root:{component:{name:'Users'}}})
+      goToUsers()
     }
   }
 

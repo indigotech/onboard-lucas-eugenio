@@ -1,7 +1,7 @@
 import React from "react"
 import { Component } from 'react'
 import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator, Button, ListRenderItemInfo } from "react-native"
-import { getUsersPromise, UserPresenter } from '../queries/Users'
+import { getUsers, UserPresenter } from '../queries/Users'
 import { FetchResult } from "apollo-link"
 
 interface UserListState {
@@ -78,7 +78,7 @@ export class UserList extends Component<{}, UserListState> {
   }
 
   private getUsers() {
-    getUsersPromise(this.state.offset, usersPerPage)
+    getUsers(this.state.offset, usersPerPage)
     .then(result => this.setUsersList(result))
     .catch(error => this.setState({usersError: true}))
     .finally(() => this.setState({isLoading: false}))

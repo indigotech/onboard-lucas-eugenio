@@ -18,7 +18,7 @@ interface PageInfo {
     hasPreviousPage: boolean
 }
 
-export function getUsersPromise(offset: number, limit: number): Promise<ApolloQueryResult<Users>> {
+export function getUsers(offset: number, limit: number): Promise<ApolloQueryResult<Users>> {
     return (
         AuthClient.query({
             query: gql(UsersQuery),
