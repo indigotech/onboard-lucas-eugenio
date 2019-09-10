@@ -3,7 +3,7 @@ import { Component } from 'react'
 import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, ActivityIndicator, Alert } from "react-native"
 import { FetchResult } from 'apollo-boost'
 import { clientLogin, LoginInput } from '../mutations/Login'
-import { storeToken, localStoreToken } from '../TokenStorage'
+import { storeTokenOnMemory, storeTokenLocal } from '../TokenStorage'
 import { Navigation } from 'react-native-navigation'
 
 interface LoginState {
@@ -126,9 +126,9 @@ export class Login extends Component<{}, LoginState> {
     if (!result.data) { return }
     const token: string = result.data.Login.token
     try {
-      await storeToken(token)
+      await storeTokenOnMemory(token)
     } catch (error) {
-      localStoreToken(token)
+      storeTokenLocal(token)
     } finally {
       Navigation.setRoot({root:{component:{name:'Users'}}})
     }
