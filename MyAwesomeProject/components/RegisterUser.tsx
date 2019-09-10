@@ -3,6 +3,7 @@ import { Component } from 'react'
 import { StyleSheet, Text, View, SafeAreaView, Alert, ActivityIndicator, Button, TextInput, Picker } from "react-native"
 import { RegisterNewUser, UserInput } from '../mutations/NewUser'
 import { validateName, validateEmail, validatePassword, validateCpf, validateBirthDate } from '../Validations'
+import { goToUsers } from "../Screens";
 
 interface RegisterUserState {
   role: string
@@ -14,8 +15,7 @@ interface RegisterUserState {
   isLoading: boolean
 }
 
-const SuccessMessage: string = 'Novo Usuário Cadastrado'
-const ErrorMessage: string = 'Ops, Algo Deu Errado'
+const GenericErrorMessage: string = 'Ops, Algo Deu Errado'
 
 export class RegisterUser extends Component<{}, RegisterUserState> {
   private name: string
@@ -141,7 +141,7 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
       role: this.state.role
     }
     RegisterNewUser(UserInput)
-    .then(() => Alert.alert(SuccessMessage))
+    .then(() => goToUsers())
     .catch(error => this.handleError(error))
     .finally(() => this.setState({isLoading: false}))
   }
@@ -153,7 +153,7 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
     } else if (message.includes('uk_user_email')) {
       this.setState({emailError: 'Email já cadastrado. Por favor, insira outro email'})
     } else {
-      Alert.alert(ErrorMessage)
+      Alert.alert(GenericErrorMessage)
     }
   }
 }

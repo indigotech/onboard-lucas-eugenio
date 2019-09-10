@@ -1,6 +1,6 @@
-import { registerScreens, goToNewUser } from './Screens'
+import { registerScreens, goToNewUser, goToLogin } from './Screens'
 import { Navigation } from 'react-native-navigation'
 
 registerScreens()
 
-Navigation.events().registerAppLaunchedListener(() => {goToNewUser()})
+Navigation.events().registerAppLaunchedListener(() => {goToLogin()})

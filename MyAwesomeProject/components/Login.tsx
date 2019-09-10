@@ -3,7 +3,7 @@ import { Component } from 'react'
 import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, ActivityIndicator, Alert } from "react-native"
 import { FetchResult } from 'apollo-boost'
 import { UserLogin, LoginInput } from '../mutations/Login'
-import { storeToken, localStoreToken } from '../TokenStorage'
+import { storeTokenOnMemory, storeTokenLocal } from '../TokenStorage'
 import { validateEmail, validatePassword } from '../Validations'
 import { goToUsers } from "../Screens"
 
@@ -106,9 +106,9 @@ export class Login extends Component<{}, LoginState> {
     if (!result.data) { return }
     const token: string = result.data.Login.token
     try {
-      await storeToken(token)
+      await storeTokenOnMemory(token)
     } catch (error) {
-      localStoreToken(token)
+      storeTokenLocal(token)
     } finally {
       goToUsers()
     }

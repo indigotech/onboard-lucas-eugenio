@@ -2,14 +2,13 @@ import { ApolloClient } from 'apollo-client'
 import { createHttpLink } from 'apollo-link-http'
 import { setContext } from 'apollo-link-context'
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import { getToken, localGetToken } from './TokenStorage'
+import { getTokenOnMemory, getTokenLocal } from './TokenStorage'
 import { goToLogin } from './Screens'
 
 const httpLink = createHttpLink({ uri: 'https://tq-template-server-sample.herokuapp.com/graphql' })
 
 const authLink = setContext(async (_, { headers }) => {
-  let token: string = await getToken()
-  if (!token) { token = localGetToken() }
+  const token: string = (await getTokenOnMemory()) || getTokenLocal();
   if (!token) { goToLogin() }
   return {
     headers: { authorization: token ? token : '' }
