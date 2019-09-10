@@ -1,8 +1,9 @@
 import React from "react"
 import { Component } from 'react'
-import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator, Button, ListRenderItemInfo } from "react-native"
+import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator, Button, ListRenderItemInfo, TouchableOpacity } from "react-native"
 import { getUsers, UserPresenter } from '../queries/Users'
 import { FetchResult } from "apollo-link"
+import { goToUserDetail } from "../Screens"
 
 interface UserListState {
   users: UserPresenter[]
@@ -13,7 +14,7 @@ interface UserListState {
   hasPreviousPage: boolean
 }
 
-export const usersPerPage: number = 8
+export const USERS_PER_PAGE: number = 8
 const errorText: string = 'Ops, Algo Deu Errado!'
 
 export class UserList extends Component<{}, UserListState> {
@@ -78,38 +79,44 @@ export class UserList extends Component<{}, UserListState> {
   }
 
   private getUsers() {
-    getUsers(this.state.offset, usersPerPage)
+    getUsers(this.state.offset, USERS_PER_PAGE)
     .then(result => this.setUsersList(result))
-    .catch(error => this.setState({usersError: true}))
+    .catch(() => this.setState({usersError: true}))
     .finally(() => this.setState({isLoading: false}))
   }
 
   private setUsersList(result: FetchResult) {
     if (!result.data) { return }
     this.setState({
-      users: result.data.Users.nodes, 
-      isLoading: false,
+      users: result.data.Users.nodes,
       hasPreviousPage: result.data.Users.pageInfo.hasPreviousPage,
       hasNextPage: result.data.Users.pageInfo.hasNextPage
     })
   }
 
-  private displayItemOfList({ item: user }: ListRenderItemInfo<UserPresenter>) {
+  private displayItemOfList = ({ item: user }: ListRenderItemInfo<UserPresenter>) => {
     return (
       <View style={styles.flatview}>
-        <Text style={styles.name}>{user.name}</Text>
+        <TouchableOpacity
+          onPress={this.handleTapDetailButton(user.id)}>
+          <Text style={styles.name}>{user.name}</Text>
+        </TouchableOpacity>
         <Text style={styles.email}>{user.email}</Text>
       </View>
     )
   }
 
   private handlePreviousButtonTap = async () => { 
-    await this.setState({offset: this.state.offset - usersPerPage})
+    await this.setState({offset: this.state.offset - USERS_PER_PAGE})
     this.getUsers()
   }
   private handleNextButtonTap = async () => { 
-    await this.setState({offset: this.state.offset + usersPerPage}) 
+    await this.setState({offset: this.state.offset + USERS_PER_PAGE}) 
     this.getUsers()
+  }
+
+  private handleTapDetailButton = (id: number) => () => {
+    goToUserDetail(id)
   }
 }
 
