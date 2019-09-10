@@ -10,9 +10,7 @@ const httpLink = createHttpLink({ uri: 'https://tq-template-server-sample.heroku
 const authLink = setContext(async (_, { headers }) => {
   const token: string = (await getTokenOnMemory()) || getTokenLocal();
   if (!token) { goToLogin() }
-  return {
-    headers: { authorization: token ? token : '' }
-  }
+  return { headers: { authorization: token } }
 })
 
 export const AuthClient = new ApolloClient({

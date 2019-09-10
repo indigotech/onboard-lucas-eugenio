@@ -22,14 +22,14 @@ export class UserDetail extends Component<UserDetailProps, UserDetailState> {
   private email: string = ''
   private cpf: string = ''
   private birthDate: string = ''
-  private role: string = ''
+  private role: 'user' | 'admin'  = 'user'
 
   constructor(props: {userId: number}) {
-      super(props)
-      this.state = {
-        isLoading: true,
-        userError: false
-      }
+    super(props)
+    this.state = {
+      isLoading: true,
+      userError: false
+    }
   }
 
   componentDidMount() {
@@ -60,7 +60,7 @@ export class UserDetail extends Component<UserDetailProps, UserDetailState> {
           <Text style={styles.formsTextRed}>{this.birthDate}</Text>
           
           <Text style={styles.formsText}>Função</Text>
-          <Text style={styles.formsTextRed}>{this.translateRoleForPresentation(this.role)}</Text>          
+          <Text style={styles.formsTextRed}>{this.role==='user' ? 'Usuário' : 'Administrador'}</Text>          
 
           <View style={styles.button}>
             <Button
@@ -94,13 +94,6 @@ export class UserDetail extends Component<UserDetailProps, UserDetailState> {
     this.birthDate = result.data.User.birthDate
     this.role = result.data.User.role
   }
-
-  private translateRoleForPresentation(role: string): string {
-    if (role === 'user') { return 'Usuário' }
-    else if (role === 'admin') { return 'Administrador' }
-    else if (role) { return 'Ops, ocorreu algum erro' }
-    else { return '' }
-  } 
 }
 
 // styles

@@ -8,20 +8,20 @@ export interface UserType {
   email: string
   cpf: string
   birthDate: string
-  role: string
+  role: 'user' | 'admin'
 }
 
 
 export function getUser(id: number): Promise<ApolloQueryResult<UserType>> {
 	return (
 		AuthClient.query({
-			query: UsersQuery,
+			query: UserQuery,
 			variables: { id }
 		})
 	)
 }
 
-const UsersQuery = gql`
+const UserQuery = gql`
 	query User($id: Int!) {
     User(id: $id) {
       id
