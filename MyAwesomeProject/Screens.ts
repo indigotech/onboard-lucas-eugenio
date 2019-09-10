@@ -10,13 +10,13 @@ export function registerScreens() {
 }
 
 export function goToLogin() {
-    Navigation.setRoot({root:{component:{name:'Login'}}})
+	Navigation.setRoot({root:{component:{name:'Login'}}})
 }
 
 export function goToUsers() {
-    Navigation.setRoot({root:{component:{name:'Users'}}})
+	Navigation.setRoot({root:{component:{name:'Users'}}})
 }
 
 export function goToNewUser() {
-    Navigation.setRoot({root:{component:{name:'NewUser'}}})
+  Navigation.setRoot({root:{component:{name:'NewUser'}}})
 }

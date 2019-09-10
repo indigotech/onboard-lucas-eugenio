@@ -16,13 +16,11 @@ interface LoginState {
 const loginErrorAlert: string =  "Credenciais Inválidas"
 
 export class Login extends Component<{}, LoginState> {
-  private email: string
-  private password: string
+  private email: string = ''
+  private password: string = ''
 
   constructor(props: {}) {
     super(props)
-    this.email = ''
-    this.password = ''
     this.state = {
       emailError: '',
       passwordError: '',
@@ -83,7 +81,6 @@ export class Login extends Component<{}, LoginState> {
     const passwordErrorText: string = validatePassword(this.password)
 
     if (!passwordErrorText && !emailErrorText) {
-      this.setState({isLoading: true})
       this.doLogin()
     } else {
       this.setState({emailError: emailErrorText, passwordError: passwordErrorText})
@@ -91,6 +88,7 @@ export class Login extends Component<{}, LoginState> {
   }
 
   private doLogin() {
+    this.setState({isLoading: true})
     const LoginInput: LoginInput = {
       email: this.email,
       password: this.password,

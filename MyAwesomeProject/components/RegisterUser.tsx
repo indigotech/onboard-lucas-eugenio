@@ -18,19 +18,14 @@ interface RegisterUserState {
 const GenericErrorMessage: string = 'Ops, Algo Deu Errado'
 
 export class RegisterUser extends Component<{}, RegisterUserState> {
-  private name: string
-  private email: string
-  private password: string
-  private cpf: string
-  private birthDate: string
+  private name: string = ''
+  private email: string = ''
+  private password: string = ''
+  private cpf: string = ''
+  private birthDate: string = ''
 
   constructor(props: {}) {
     super(props)
-    this.name = ''
-    this.email = ''
-    this.password = ''
-    this.cpf = ''
-    this.birthDate = ''
     this.state = {
       role: 'user',
       nameError: '',
@@ -116,22 +111,24 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
   private handleRoleChange = (text: string) => this.setState({role: text})
 
   private handleButtonTap = () => {
-    const nameErrorText: string = validateName(this.name)
-    const emailErrorText: string = validateEmail(this.email)
-    const passwordErrorText: string = validatePassword(this.password)
-    const cpfErrorText: string = validateCpf(this.cpf)
-    const birthDateErrorText: string = validateBirthDate(this.birthDate)
+    const errorTexts = {
+      nameError: validateName(this.name),
+      emailError: validateEmail(this.email),
+      passwordError: validatePassword(this.password),
+      cpfError: validateCpf(this.cpf),
+      birthDateError: validateBirthDate(this.birthDate)
+    }
 
-    if (!nameErrorText && !emailErrorText && !passwordErrorText && !cpfErrorText && !birthDateErrorText) {
-      this.setState({isLoading: true})
+    const hasError: boolean = Object.values(errorTexts).some(text => text);
+    if (!hasError) {
       this.doRegisterUser()
     } else {
-      this.setState({ nameError: nameErrorText, emailError: emailErrorText, passwordError: passwordErrorText,
-        cpfError: cpfErrorText, birthDateError: birthDateErrorText })
+      this.setState({ ...errorTexts })
     }
   }
 
   private doRegisterUser() {
+    this.setState({ isLoading: true })
     const UserInput: UserInput = {
       name: this.name,
       email: this.email,
@@ -146,7 +143,7 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
     .finally(() => this.setState({isLoading: false}))
   }
 
-  private handleError = (error: { message: string; }) => {
+  private handleError = (error: {message: string}) => {
     const message: string = error.message
     if (message.includes('weak-password')) {
       this.setState({passwordError: 'Password não seguro. Por favor, insira um mais seguro'})
