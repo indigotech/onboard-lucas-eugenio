@@ -9,6 +9,8 @@ interface ButtonProps {
 }
 
 export class Button extends Component<ButtonProps> {
+  constructor(props: ButtonProps) { super(props) }
+
   render() {
     return(
       <ButtonBox

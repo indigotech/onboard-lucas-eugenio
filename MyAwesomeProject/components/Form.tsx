@@ -15,7 +15,7 @@ interface FormState {
 export class Form extends Component<FormProps, FormState> {
   private textInput: string = ''
 
-  constructor(props) {
+  constructor(props: FormProps) {
     super(props)
     this.state = {
       textBottom: ''
