@@ -1,17 +1,16 @@
 import React from "react"
 import { Component } from 'react'
-import { Button, StyleSheet, Text, View, SafeAreaView, TextInput, ActivityIndicator, Alert } from "react-native"
+import { StyleSheet, View, SafeAreaView, ActivityIndicator, Alert } from "react-native"
 import { FetchResult } from 'apollo-boost'
 import { UserLogin, LoginInput } from '../mutations/Login'
 import { storeTokenOnMemory, storeTokenLocal } from '../TokenStorage'
 import { validateEmail, validatePassword } from '../Validations'
 import { goToUsers } from "../Screens"
+import { Button } from './Button'
+import { Form } from './Form'
+import { H1 } from '../Styles'
 
-interface LoginState {
-  emailError: string
-  passwordError: string
-  isLoading: boolean
-}
+interface LoginState { isLoading: boolean }
 
 const loginErrorAlert: string =  "Credenciais Inválidas"
 
@@ -21,70 +20,40 @@ export class Login extends Component<{}, LoginState> {
 
   constructor(props: {}) {
     super(props)
-    this.state = {
-      emailError: '',
-      passwordError: '',
-      isLoading: false
-    }
+    this.state = { isLoading: false }
   }
 
   render() {
     return (
       <View style={styles.root}>
-        <SafeAreaView />
-        <Text style={styles.greeting}>
-          Bem-vindo(a) à Taqtile!
-        </Text>
+        <SafeAreaView/>
+        <H1>Bem-vindo(a) à Taqtile!</H1>
 
-        <View style={styles.formBody}>
-          <Text style={styles.formsText}>
-            E-mail
-          </Text>
-          <TextInput style={styles.inputBox}
-            autoCapitalize = 'none'
-            onChangeText={this.handleEmailChange}
+        <Form
+          textTop='Email'
+          onEndEditing={this.handleEmailChange}
+          validationFunction={validateEmail}
+        />
+
+        <Form
+          textTop='Senha'
+          onEndEditing={this.handlePasswordChange}
+          validationFunction={validatePassword}
+        />
+
+        <View style={styles.button}>
+          <Button
+            title="Entrar"
+            onPress={this.handleButtonTap}
+            disabled={this.state.isLoading}
           />
-          <Text style={styles.errorText}>
-            {this.state.emailError}
-          </Text>
+        </View>
 
-          <Text style={styles.formsText}>
-            Senha
-          </Text>
-          <TextInput style={styles.inputBox}
-            autoCapitalize = 'none'
-            onChangeText={this.handlePasswordChange}
-          />
-          <Text style={styles.errorText}>
-            {this.state.passwordError}
-          </Text>
-
-          <View style={styles.button}>
-            <Button
-              title="Entrar"
-              onPress={this.handleButtonTap}
-              disabled={this.state.isLoading}
-              color="white"
-            />
-          </View>
-
-          <View style={styles.loading}>
-            {this.state.isLoading && <ActivityIndicator size="large" color="black"/>}            
-          </View>
+        <View style={styles.loading}>
+          {this.state.isLoading && <ActivityIndicator size="large" color="black"/>}            
         </View>
       </View>
     )
-  }
-
-  private handleButtonTap = () => {
-    const emailErrorText: string = validateEmail(this.email)
-    const passwordErrorText: string = validatePassword(this.password)
-
-    if (!passwordErrorText && !emailErrorText) {
-      this.doLogin()
-    } else {
-      this.setState({emailError: emailErrorText, passwordError: passwordErrorText})
-    }
   }
 
   private doLogin() {
@@ -114,58 +83,21 @@ export class Login extends Component<{}, LoginState> {
 
   private handleEmailChange = (text: string) => this.email = text
   private handlePasswordChange = (text: string) => this.password = text
+  private handleButtonTap = () => { if (this.email && this.password) { this.doLogin() } }
 }
-
-// styles
 
 const styles = StyleSheet.create({
   root: {
     alignItems: "center",
-    alignSelf: "stretch"
-  },
-  formBody: {
-    alignItems: "baseline",
     alignSelf: "stretch",
-    marginTop: 30,
-    padding: 20,
-    minHeight: 200
-  },
-  inputBox: {
-    marginTop: 20,
-    alignSelf: "stretch",
-    borderColor: "#999",
-    borderWidth: 1,
-    fontSize: 20,
-    padding: 10,
-    borderRadius: 10
+    padding: 16
   },
   button: {
-    marginTop: 20,
-    borderRadius: 10,
-    alignSelf: "stretch",
-    padding: 10,
-    backgroundColor: "cadetblue",
-    fontWeight: "bold"
-  },
-  greeting: {
-    color: "#999",
-    fontWeight: "bold",
-    fontSize: 28
-  },
-  formsText: {
-    marginTop: 20,
-    color: "#999",
-    fontWeight: "bold",
-    fontSize: 20
-  },
-  errorText: {
-    marginTop: 10,
-    color: "red",
-    fontWeight: "bold",
-    fontSize: 10
+    marginTop: 8,
+    alignSelf: "stretch"
   },
   loading: {
-    marginTop: 40,
+    marginTop: 24,
     alignSelf: "stretch",
     alignItems: "center"
   }

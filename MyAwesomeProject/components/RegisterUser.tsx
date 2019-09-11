@@ -1,18 +1,18 @@
 import React from "react"
 import { Component } from 'react'
-import { StyleSheet, Text, View, SafeAreaView, Alert, ActivityIndicator, Button, TextInput, Picker } from "react-native"
+import { StyleSheet, Text, View, SafeAreaView, Alert, ActivityIndicator, TextInput, Picker } from "react-native"
 import { RegisterNewUser, UserInput } from '../mutations/NewUser'
 import { validateName, validateEmail, validatePassword, validateCpf, validateBirthDate } from '../Validations'
-import { goToUsers } from "../Screens";
+import { goToUsers } from "../Screens"
+import { Button } from './Button'
+import { Form } from './Form'
+import { H1 } from '../Styles'
 
 interface RegisterUserState {
   role: string
-  nameError: string
-  emailError: string
-  passwordError: string
-  cpfError: string
-  birthDateError: string
   isLoading: boolean
+  specialPasswordError?: string
+  specialEmailError?: string
 }
 
 const GenericErrorMessage: string = 'Ops, Algo Deu Errado'
@@ -28,12 +28,7 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
     super(props)
     this.state = {
       role: 'user',
-      nameError: '',
-      emailError: '',
-      passwordError: '',
-      cpfError: '',
-      birthDateError: '',
-      isLoading: false,
+      isLoading: false
     }
   }
 
@@ -41,63 +36,60 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
     return (
       <View style={styles.root}>
         <SafeAreaView/>
-        <Text style={styles.greeting}>Registrar Usuário</Text>
+        <H1>Registrar Usuário</H1>
 
-        <View style={styles.formBody}>
-            <Text style={styles.formsText}>Nome</Text>
-            <TextInput style={styles.inputBox} 
-              autoCapitalize='none'
-              onChangeText={this.handleNameChange}/>
-            <Text style={styles.errorText}>{this.state.nameError}</Text>
+        <Form
+          textTop='Nome'
+          onEndEditing={this.handleNameChange}
+          validationFunction={validateName}
+        />
 
-            <Text style={styles.formsText}>E-mail</Text>
-            <TextInput style={styles.inputBox} 
-              autoCapitalize = 'none'
-              onChangeText={this.handleEmailChange}/>
-            <Text style={styles.errorText}>{this.state.emailError}</Text>
- 
-            <Text style={styles.formsText}>CPF</Text>
-            <TextInput style={styles.inputBox} 
-              autoCapitalize = 'none'
-              onChangeText={this.handleCpfChange}
-              placeholder='Somente Números'/>
-            <Text style={styles.errorText}>{this.state.cpfError}</Text>
+        <Form
+          textTop='Email'
+          onEndEditing={this.handleEmailChange}
+          validationFunction={validateEmail}
+          textBottom={this.state.specialEmailError}
+        />
 
-            <Text style={styles.formsText}>Data de Nascimento</Text>
-            <TextInput style={styles.inputBox}
-              autoCapitalize = 'none'
-              onChangeText={this.handleBirthDateChange}
-              placeholder='Formato YYYY-MM-DD'/>
-            <Text style={styles.errorText}>{this.state.birthDateError}</Text>
+        <Form
+          textTop='CPF'
+          onEndEditing={this.handleCpfChange}
+          validationFunction={validateCpf}
+        />
 
-            <Text style={styles.formsText}>Senha</Text>
-            <TextInput style={styles.inputBox}
-              autoCapitalize = 'none'
-              onChangeText={this.handlePasswordChange}/>
-            <Text style={styles.errorText}>{this.state.passwordError}</Text>
-            
-            <Text style={styles.formsText}>Função</Text>
-            <Picker
-              selectedValue={this.state.role}
-              style={styles.picker}
-              itemStyle={styles.itemStyle}
-              onValueChange={this.handleRoleChange}>
-              <Picker.Item label="Usuário" value="user"/>
-              <Picker.Item label="Administrador" value="admin"/>
-            </Picker>
+        <Form
+          textTop='Data de Nascimento'
+          onEndEditing={this.handleBirthDateChange}
+          validationFunction={validateBirthDate}
+        />
 
-            <View style={styles.button}>
-              <Button
-                title="Cadastrar"
-                onPress={this.handleButtonTap}
-                disabled={this.state.isLoading}
-                color="white"
-              />
-            </View>
+        <Form
+          textTop='Senha'
+          onEndEditing={this.handlePasswordChange}
+          validationFunction={validatePassword}
+          textBottom={this.state.specialPasswordError}
+        />
+        
+        <Text style={styles.formsText}>Função</Text>
+        <Picker
+          selectedValue={this.state.role}
+          style={styles.picker}
+          itemStyle={styles.itemStyle}
+          onValueChange={this.handleRoleChange}>
+          <Picker.Item label="Usuário" value="user"/>
+          <Picker.Item label="Administrador" value="admin"/>
+        </Picker>
 
-            <View style={styles.loading}>
-              {this.state.isLoading && <ActivityIndicator size="large" color="black"/>}            
-            </View>
+        <View style={styles.button}>
+          <Button
+            title="Cadastrar"
+            onPress={this.handleButtonTap}
+            disabled={this.state.isLoading}
+          />
+        </View>
+
+        <View style={styles.loading}>
+          {this.state.isLoading && <ActivityIndicator size="large" color="black"/>}            
         </View>
       </View>
     )
@@ -111,20 +103,8 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
   private handleRoleChange = (text: string) => this.setState({role: text})
 
   private handleButtonTap = () => {
-    const errorTexts = {
-      nameError: validateName(this.name),
-      emailError: validateEmail(this.email),
-      passwordError: validatePassword(this.password),
-      cpfError: validateCpf(this.cpf),
-      birthDateError: validateBirthDate(this.birthDate)
-    }
-
-    const hasError: boolean = Object.values(errorTexts).some(text => text);
-    if (!hasError) {
-      this.doRegisterUser()
-    } else {
-      this.setState({ ...errorTexts })
-    }
+    const hasError: boolean = !this.name || !this.email || !this.password || !this.cpf || !this.birthDate
+    if (!hasError) { this.doRegisterUser() }
   }
 
   private doRegisterUser() {
@@ -146,75 +126,43 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
   private handleError = (error: {message: string}) => {
     const message: string = error.message
     if (message.includes('weak-password')) {
-      this.setState({passwordError: 'Password não seguro. Por favor, insira um mais seguro'})
+      this.setState({specialPasswordError: 'Password não seguro. Por favor, insira um mais seguro'})
     } else if (message.includes('uk_user_email')) {
-      this.setState({emailError: 'Email já cadastrado. Por favor, insira outro email'})
+      this.setState({specialEmailError: 'Email já cadastrado. Por favor, insira outro email'})
     } else {
       Alert.alert(GenericErrorMessage)
     }
   }
 }
 
-// styles
-
 const styles = StyleSheet.create({
-    root: {
-      alignItems: "center",
-      alignSelf: "stretch"
-    },
-    formBody: {
-      alignItems: "baseline",
-      alignSelf: "stretch",
-      marginTop: 30,
-      padding: 20,
-      minHeight: 200
-    },
-    inputBox: {
-      marginTop: 10,
-      alignSelf: "stretch",
-      borderColor: "#999",
-      borderWidth: 1,
-      fontSize: 20,
-      padding: 10,
-      borderRadius: 10
-    },
-    button: {
-      marginTop: 20,
-      borderRadius: 10,
-      alignSelf: "stretch",
-      padding: 10,
-      backgroundColor: "cadetblue",
-      fontWeight: "bold"
-    },
-    greeting: {
-      color: "#999",
-      fontWeight: "bold",
-      fontSize: 28
-    },
-    formsText: {
-      marginTop: 15,
-      color: "#999",
-      fontWeight: "bold",
-      fontSize: 20
-    },
-    errorText: {
-      marginTop: 5,
-      color: "red",
-      fontWeight: "bold",
-      fontSize: 10
-    },
-    loading: {
-      marginTop: 40,
-      alignSelf: "stretch",
-      alignItems: "center"
-    },
-    itemStyle: {
-      fontSize: 20,
-      height: 75,
-      textAlign: 'center',
-      fontWeight: 'bold'
-    },
-    picker: {
-      alignSelf: 'stretch'
-    },
+  root: {
+    alignItems: "center",
+    alignSelf: "stretch",
+    padding: 16
+  },
+  button: {
+    marginTop: 8,
+    alignSelf: "stretch"
+  },
+  loading: {
+    marginTop: 24,
+    alignSelf: "stretch",
+    alignItems: "center"
+  },
+  itemStyle: {
+    fontSize: 16,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    height: 100
+  },
+  picker: {
+    alignSelf: 'stretch'
+  },
+  formsText: {
+    color: "gray",
+    fontWeight: "bold",
+    fontSize: 16,
+    alignSelf: "baseline"
+  }
 })
