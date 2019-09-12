@@ -1,36 +1,30 @@
-import React from "react"
-import { Component } from 'react'
-import { StyleSheet, Text, View, SafeAreaView, Alert, ActivityIndicator, TextInput, Picker } from "react-native"
-import { RegisterNewUser, UserInput } from '../mutations/NewUser'
-import { validateName, validateEmail, validatePassword, validateCpf, validateBirthDate } from '../Validations'
-import { goToUsers } from "../Screens"
-import { Button } from './Button'
-import { Form } from './Form'
-import { H1 } from '../Styles'
+import * as React from 'react';
+import { ActivityIndicator, SafeAreaView, StyleSheet, View, Picker, Text } from 'react-native';
+import { H1 } from '../Styles';
+import { validateEmail, validatePassword, validateName, validateCpf, validateBirthDate } from '../Validations';
+import { Form } from './Form';
+import { Button } from './Button';
 
-interface RegisterUserState {
-  role: string
-  isLoading: boolean
-  specialPasswordError?: string
-  specialEmailError?: string
+export interface RegisterUserFormProps {
+  onButtonTap: (name: string, email: string, password: string, cpf: string, birthDate: string, role: string) => void;
+  isLoading: boolean;
 }
 
-const GenericErrorMessage: string = 'Ops, Algo Deu Errado'
+interface RegisterUserState {
+  role: 'user' | 'admin'
+}
 
-export class RegisterUser extends Component<{}, RegisterUserState> {
+export class RegisterUserForm extends React.Component<RegisterUserFormProps, RegisterUserState> {
+  constructor(props: RegisterUserFormProps) {
+    super(props)
+    this.state = { role: 'user'}
+  }
+
   private name: string = ''
   private email: string = ''
   private password: string = ''
   private cpf: string = ''
   private birthDate: string = ''
-
-  constructor(props: {}) {
-    super(props)
-    this.state = {
-      role: 'user',
-      isLoading: false
-    }
-  }
 
   render() {
     return (
@@ -48,7 +42,6 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
           textTop='Email'
           onEndEditing={this.handleEmailChange}
           validationFunction={validateEmail}
-          textBottom={this.state.specialEmailError}
         />
 
         <Form
@@ -67,7 +60,6 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
           textTop='Senha'
           onEndEditing={this.handlePasswordChange}
           validationFunction={validatePassword}
-          textBottom={this.state.specialPasswordError}
         />
         
         <Text style={styles.formsText}>Função</Text>
@@ -84,53 +76,27 @@ export class RegisterUser extends Component<{}, RegisterUserState> {
           <Button
             title="Cadastrar"
             onPress={this.handleButtonTap}
-            disabled={this.state.isLoading}
+            disabled={this.props.isLoading}
           />
         </View>
 
         <View style={styles.loading}>
-          {this.state.isLoading && <ActivityIndicator size="large" color="black"/>}            
+          {this.props.isLoading && <ActivityIndicator size="large" color="black"/>}            
         </View>
       </View>
-    )
+    );
   }
 
+  
   private handleNameChange = (text: string) => this.name = text
   private handleEmailChange = (text: string) => this.email = text
   private handlePasswordChange = (text: string) => this.password = text
   private handleCpfChange = (text: string) => this.cpf = text
   private handleBirthDateChange = (text: string) => this.birthDate = text
-  private handleRoleChange = (text: string) => this.setState({role: text})
-
+  private handleRoleChange = (text: 'user' | 'admin') => this.setState({role: text})
   private handleButtonTap = () => {
-    const hasError: boolean = !this.name || !this.email || !this.password || !this.cpf || !this.birthDate
-    if (!hasError) { this.doRegisterUser() }
-  }
-
-  private doRegisterUser() {
-    this.setState({ isLoading: true })
-    const UserInput: UserInput = {
-      name: this.name,
-      email: this.email,
-      password: this.password,
-      cpf: this.cpf,
-      birthDate: this.birthDate,
-      role: this.state.role
-    }
-    RegisterNewUser(UserInput)
-    .then(() => goToUsers())
-    .catch(error => this.handleError(error))
-    .finally(() => this.setState({isLoading: false}))
-  }
-
-  private handleError = (error: {message: string}) => {
-    const message: string = error.message
-    if (message.includes('weak-password')) {
-      this.setState({specialPasswordError: 'Password não seguro. Por favor, insira um mais seguro'})
-    } else if (message.includes('uk_user_email')) {
-      this.setState({specialEmailError: 'Email já cadastrado. Por favor, insira outro email'})
-    } else {
-      Alert.alert(GenericErrorMessage)
+    if (this.name && this.email && this.password && this.cpf && this.birthDate) {
+     this.props.onButtonTap(this.name, this.email, this.password, this.cpf, this.birthDate, this.state.role);
     }
   }
 }

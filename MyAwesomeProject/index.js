@@ -3,4 +3,4 @@ import { Navigation } from 'react-native-navigation'
 
 registerScreens()
 
-Navigation.events().registerAppLaunchedListener(() => goToLogin())
+Navigation.events().registerAppLaunchedListener(() => goToNewUser())

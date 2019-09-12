@@ -1,13 +1,13 @@
 import { Navigation } from 'react-native-navigation'
-import { Login } from './components/Login'
+import { LoginScreen } from './components/LoginScreen'
 import { UserList } from './components/UserList'
-import { RegisterUser } from './components/RegisterUser'
+import { RegisterUserScreen } from './components/RegisterUserScreen'
 import { UserDetail } from './components/UserDetail'
 
 export function registerScreens() {
-  Navigation.registerComponent('Login', () => Login)
+  Navigation.registerComponent('Login', () => LoginScreen)
   Navigation.registerComponent('Users', () => UserList)
-  Navigation.registerComponent('NewUser', () => RegisterUser)
+  Navigation.registerComponent('NewUser', () => RegisterUserScreen)
   Navigation.registerComponent('UserDetail', () => UserDetail)
 }
 
